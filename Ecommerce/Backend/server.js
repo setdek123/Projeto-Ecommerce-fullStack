@@ -1,4 +1,4 @@
-import { configDotenv } from 'dotenv';
+import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -7,7 +7,7 @@ import User from './models/User.js';
 import cors from 'cors';
 
 
-
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -140,7 +140,7 @@ app.post('/auth/login', async (req, res)=>{
 
     try{
         // senha do token
-        const secret = 'HGJHBbdegd56456dsgd'; 
+        const secret = process.env.SECRET; 
         
         const token = jwt.sign(
             {
@@ -162,12 +162,12 @@ app.post('/auth/login', async (req, res)=>{
     return res.status(200).json({ msg: 'Login realizado com sucesso!' });
 })
 
-const {CONNECTDB} = process.env;
+
 
 // Connect to MongoDB and start server
 
 mongoose
-    .connect('mongodb+srv://setdek:pShnmEwSIANFIRuB@users.tpt6n.mongodb.net/Users?retryWrites=true&w=majority&appName=Users')
+    .connect(process.env.CONNECT_DB)
     .then(() => {
         app.listen(3000, () => console.log('Conectado ao banco e servidor rodando na porta 3000!'));
     })
