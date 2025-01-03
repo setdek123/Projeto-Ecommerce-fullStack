@@ -4,11 +4,18 @@ import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../Context/Context";
 import DashBoard from "./DashBoard";
 import Login from "./Login";
+import Cookie from 'js-cookie';
+import api from "../../../../Backend/api";
 
 
+const Navbar = () => {
+    const { acount } = useContext(AppContext);
+    const { avatar, BackendAvatar } = useContext(AppContext);
+    
+    
+    
 
-const Navbar = (props) => {
-    const {acount} = useContext(AppContext);
+    
     
     return (
         <div className="flex justify-between px-20 border-b p-4">
@@ -34,6 +41,15 @@ const Navbar = (props) => {
                 </div>
                 <div className="flex gap-2 items-center ml-2">
                    <Link className="flex gap-3" to={'/login'}><SignIn className="text-3xl"/>Sing In</Link> 
+                </div>
+                <div>
+                    {avatar ? (
+                        <img src={avatar}  className="w-10 h-10 rounded-full border cursor-pointer" />
+                    ): <input type="file"
+                    accept="image/*"
+                    onChange={BackendAvatar} 
+                    className=""
+                    />}
                 </div>
             </div>
         </div>

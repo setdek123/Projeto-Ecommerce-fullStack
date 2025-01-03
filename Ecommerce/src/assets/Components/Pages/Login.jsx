@@ -5,11 +5,12 @@ import api from '../../../../Backend/api';
 import { useState } from 'react';
 import Cookie from 'js-cookie';
 
-
 const Login = () => {
     const [sendEmail, setSendEmail] = useState('');
     const [sendPassword, setSendPassword] = useState('');
     const [msgError, setMsgError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
     const navigate = useNavigate();
 
     const handleSendLogin = async (e) => {
@@ -20,25 +21,31 @@ const Login = () => {
             return;
         }
 
-        try {
-            const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NmRlOWJiNDE0MWE2NjMwMDdhOWFjMyIsImlhdCI6MTczNTcxNjIxMX0.5Iger7njF5-Q4jsOopvBSyf9O9Jo4cYhDMyv2oH1aO8'; // Substituir pelo método correto de obtenção do token, se necessário.
+        setIsLoading(true);
 
+        try {
             const response = await api.post('/auth/login', {
                 email: sendEmail,
                 password: sendPassword,
-            }, {
-                headers: { Authorization: `Bearer ${token}` },
             });
+
+            setIsLoading(false);
 
             if (response.status === 200) {
                 setMsgError('Login realizado com sucesso!');
-                Cookie.set('authToken', response.data.token); // Salvar token em cookies
-                navigate('/'); // Redirecionar após login
+                Cookie.set('User-Cookie', response.data.token); // Salvar token em cookies
+                Cookie.set('AvatarUlr', response.data.avatar);
+                navigate('/');
             } else {
                 setMsgError('Erro ao realizar login!');
             }
         } catch (err) {
-            setMsgError('Erro ao conectar ao servidor. Verifique suas credenciais.');
+            setIsLoading(false);
+            if (err.response && err.response.status === 401) {
+                setMsgError('Credenciais inválidas. Tente novamente.');
+            } else {
+                setMsgError('Erro ao conectar ao servidor. Verifique suas credenciais.');
+            }
         }
     };
 
@@ -58,6 +65,7 @@ const Login = () => {
                                     type="email"
                                     required
                                     placeholder="Email"
+                                    value={sendEmail}
                                     onChange={(e) => setSendEmail(e.target.value)}
                                 />
                             </div>
@@ -67,6 +75,7 @@ const Login = () => {
                                     className="p-3 w-80 border rounded-lg hover:bg-slate-100"
                                     type="password"
                                     placeholder="Senha"
+                                    value={sendPassword}
                                     onChange={(e) => setSendPassword(e.target.value)}
                                 />
                             </div>
@@ -77,8 +86,13 @@ const Login = () => {
                             </Link>
                         </div>
                         <div className="flex">
-                            <button className="p-4 hover:bg-gray-400 font-semibold text-gray-500 bg-gray-300 rounded-lg w-full">
-                                Entrar
+                            <button
+                                className={`p-4 font-semibold text-gray-500 rounded-lg w-full ${
+                                    isLoading ? 'bg-gray-400 cursor-not-allowed' : 'hover:bg-gray-400 bg-gray-300'
+                                }`}
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Entrando...' : 'Entrar'}
                             </button>
                         </div>
                         {msgError && (

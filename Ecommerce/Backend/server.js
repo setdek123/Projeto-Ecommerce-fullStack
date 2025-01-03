@@ -7,6 +7,8 @@ import User from './models/User.js';
 import cors from 'cors';
 
 
+
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -160,9 +162,12 @@ app.post('/auth/login', async (req, res)=>{
     return res.status(200).json({ msg: 'Login realizado com sucesso!' });
 })
 
+const {CONNECTDB} = process.env;
+
 // Connect to MongoDB and start server
+
 mongoose
-    .connect(`mongodb+srv://setdek:pShnmEwSIANFIRuB@users.tpt6n.mongodb.net/Users?retryWrites=true&w=majority&appName=Users`)
+    .connect('mongodb+srv://setdek:pShnmEwSIANFIRuB@users.tpt6n.mongodb.net/Users?retryWrites=true&w=majority&appName=Users')
     .then(() => {
         app.listen(3000, () => console.log('Conectado ao banco e servidor rodando na porta 3000!'));
     })

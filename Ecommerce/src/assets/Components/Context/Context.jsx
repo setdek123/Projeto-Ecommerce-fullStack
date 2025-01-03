@@ -11,6 +11,7 @@ const Context = ({children}) => {
     const [items, setItems] = useState([]);
     const [acount, setCount] = useState(0);
     const [soma ,setSoma] = useState(0);
+    const [avatar, setAvatar] = useState('');
     const [duplicate, setDuplicate] = useState([ 1,2,3,4,5,6,7,8,9,10 ]);
     
 
@@ -40,6 +41,16 @@ const Context = ({children}) => {
 
     }
 
+
+    const BackendAvatar = (e) =>{
+        const file = e.target.files[0]; // Correção: usa 'files' em vez de 'file'
+        if (file) {
+            setAvatar(URL.createObjectURL(file)); // Exibe a imagem selecionada
+        }
+    }
+
+
+
     return (
         <AppContext.Provider value={{
             product, 
@@ -54,7 +65,10 @@ const Context = ({children}) => {
             soma, 
             setSoma,
             setDuplicate,
-            duplicate
+            duplicate,
+            avatar,
+            setAvatar,
+            BackendAvatar
             
             }} >
 
