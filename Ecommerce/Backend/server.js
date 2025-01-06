@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+//app.use(cors());
 
 // Public Route
 app.get('/', (req, res) => {
@@ -30,8 +30,8 @@ const checkToken = (req, res, next) => {
 
     
     try{
-        const secret = 'HGJHBbdegd56456dsgd';
-        jwt.verify(token, secret);
+        
+        jwt.verify(token, process.env.SECRET);
         next()
     }catch(error){
         res.status(400).json({msg: 'Token inválido!'});
