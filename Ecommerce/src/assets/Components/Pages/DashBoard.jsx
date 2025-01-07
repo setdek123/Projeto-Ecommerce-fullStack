@@ -8,10 +8,9 @@ const DashBoard = () => {
 
     const SeachUsersDb = async () =>{
         
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NmRlOWJiNDE0MWE2NjMwMDdhOWFjMyIsImlhdCI6MTczNTYwMjI2Nn0.jMl6KWa8XVhQQf3mikieNHqzNod1FM2ERO6PAT2QxBE'
         try{
           const resApi = await api.get(`/user/:${id}`, {
-            Authorization: `${token}`
+            Authorization: `${api.token}`
           });
           
           setApiRestResponse(resApi.data);

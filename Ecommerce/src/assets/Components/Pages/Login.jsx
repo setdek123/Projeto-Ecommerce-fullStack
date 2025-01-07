@@ -22,29 +22,43 @@ const Login = () => {
         }
 
         setIsLoading(true);
+        setMsgError('');
+
 
         try {
-            const response = await api.post('/auth/login', {
-                email: sendEmail,
-                password: sendPassword,
-            });
+            const response = await api.post('/auth/login',{
+                    email: sendEmail,
+                    password: sendPassword,
+                }
+            );
 
             setIsLoading(false);
+            
+            
 
             if (response.status === 200) {
                 setMsgError('Login realizado com sucesso!');
-                Cookie.set('User-Cookie', response.data.token); // Salvar token em cookies
-                Cookie.set('AvatarUlr', response.data.avatar);
-                navigate('/');
-            } else {
-                setMsgError('Erro ao realizar login!');
+                const { avatar } = response.data;
+
+                // Salvar informações no cookie
+                Cookie.set('User-Cookie', token);
+                if (avatar) Cookie.set('AvatarUrl', avatar);
+
+                // Redirecionar para a página inicial
+                navigate('/dashboard');
             }
         } catch (err) {
             setIsLoading(false);
-            if (err.response && err.response.status === 401) {
-                setMsgError('Credenciais inválidas. Tente novamente.');
+
+            if (err.response) {
+                const { status, data } = err.response;
+                if (status === 401) {
+                    setMsgError('Credenciais inválidas. Tente novamente.');
+                } else {
+                    setMsgError(data.msg || 'Erro ao conectar ao servidor.');
+                }
             } else {
-                setMsgError('Erro ao conectar ao servidor. Verifique suas credenciais.');
+                setMsgError('Erro inesperado. Tente novamente mais tarde.');
             }
         }
     };
@@ -75,6 +89,7 @@ const Login = () => {
                                     className="p-3 w-80 border rounded-lg hover:bg-slate-100"
                                     type="password"
                                     placeholder="Senha"
+                                    required
                                     value={sendPassword}
                                     onChange={(e) => setSendPassword(e.target.value)}
                                 />

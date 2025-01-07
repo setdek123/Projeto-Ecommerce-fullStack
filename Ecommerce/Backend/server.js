@@ -11,7 +11,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-//app.use(cors());
+app.use(cors());
 
 // Public Route
 app.get('/', (req, res) => {
@@ -62,9 +62,6 @@ app.get('/user/:id', checkToken, async (req, res) => {
     }
 
     res.status(200).json({ user })
-
-    
-
 });
 
 
@@ -74,38 +71,26 @@ app.post('/auth/register', async (req, res) => {
     const { name, password, email, confirmpassword } = req.body;
 
     // Validations
-    if (!name) {
-        return res.status(422).json({ msg: 'O Nome é obrigatório.' });
-    }
-
-    if (!email) {
-        return res.status(422).json({ msg: 'O Email é obrigatório.' });
-    }
-
-    if (!password) {
-        return res.status(422).json({ msg: 'A Senha é obrigatória.' });
-    }
-
+    if (!name) return res.status(422).json({ msg: 'O Nome é obrigatório.' });
+    if (!email) return res.status(422).json({ msg: 'O Email é obrigatório.' });
+    if (!password) return res.status(422).json({ msg: 'A Senha é obrigatória.' });
     if (password !== confirmpassword) {
         return res.status(422).json({ msg: 'As senhas não são iguais!' });
     }
 
     // Check if user exists
     const userExist = await User.findOne({ email });
-    if (userExist) {
-        return res.status(422).json({ msg: 'Por favor, utilize outro email.' });
-    }
+    if (userExist) return res.status(422).json({ msg: 'Por favor, utilize outro email.' });
 
     // Create and hash password
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
+    // Generate avatar URL
+    const avatar = `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
+
     // Create user
-    const newUser = new User({
-        name,
-        email,
-        password: passwordHash,
-    });
+    const newUser = new User({ name, email, avatar, password: passwordHash });
 
     try {
         await newUser.save();
@@ -116,53 +101,47 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-
 // Login user
-app.post('/auth/login', async (req, res)=>{
+app.post('/auth/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
         return res.status(422).json({ msg: 'O E-mail e senha são obrigatórios.' });
     }
 
-    
     // Check if user exists
     const user = await User.findOne({ email });
-    if (!user) {
-        return res.status(404).json({ msg: 'Usuário não encontrado!' });
-    }
+    if (!user) return res.status(404).json({ msg: 'Usuário não encontrado!' });
 
     // Compare password
     const checkPassword = await bcrypt.compare(password, user.password);
-    if (!checkPassword) {
-        return res.status(422).json({ msg: 'Senha inválida!' });
+    if (!checkPassword) return res.status(422).json({ msg: 'Senha inválida!' });
+
+    try {
+        const secret = process.env.SECRET;
+        const token = jwt.sign({ id: user._id }, secret, { expiresIn: '1h' });
+
+        return res.status(200).json({ msg: 'Autenticação realizada com sucesso!', token, avatar: user.avatar });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: 'Aconteceu um erro no servidor!' });
     }
+});
 
-    try{
-        // senha do token
-        const secret = process.env.SECRET; 
-        
-        const token = jwt.sign(
-            {
-                id: user._id,
-            },
-            secret,
-        )
+// Private Route
+app.get('/user/:id', checkToken, async (req, res) => {
+    const { id } = req.params;
 
-        
+    try {
+        const user = await User.findById(id, '-password');
+        if (!user) return res.status(404).json({ msg: 'Usuário não encontrado!' });
 
-        res.status(200).json({msg: "Autenticação realizada com sucesso!", token})
-
-    }catch(error){
-        console.log(error)
-        res.status(500).json({msg: "Aconteceu um erro no servidor!", error})
+        return res.status(200).json({ user });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ msg: 'Erro ao buscar usuário!' });
     }
-
-    // Authentication successful
-    return res.status(200).json({ msg: 'Login realizado com sucesso!' });
-})
-
-
+});
 
 // Connect to MongoDB and start server
 
