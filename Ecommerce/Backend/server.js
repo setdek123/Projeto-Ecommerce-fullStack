@@ -90,7 +90,11 @@ app.post('/auth/register', async (req, res) => {
     const avatar = `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(name)}`;
 
     // Create user
-    const newUser = new User({ name, email, avatar, password: passwordHash });
+    const newUser = new User({ 
+        name, 
+        email, 
+        avatar, 
+        password: passwordHash });
 
     try {
         await newUser.save();
